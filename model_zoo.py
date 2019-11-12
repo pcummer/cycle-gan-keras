@@ -1,0 +1,83 @@
+from tensorflow import keras
+
+def generator(nodes_per_layer=32):
+    input_x = keras.layers.Input(shape=(256, 256, 3))
+    x = keras.layers.Conv2D(nodes_per_layer*2, (2, 2), (2, 2))(input_x)
+    x_skip = keras.layers.Activation('relu')(x)
+    # x = keras.layers.BatchNormalization()(x)
+    x = keras.layers.Conv2D(nodes_per_layer*4, (2, 2), (2, 2))(x_skip)
+    x = keras.layers.Activation('relu')(x)
+    x_skip = keras.layers.Conv2D(nodes_per_layer*2, (3, 3), padding='same')(x_skip)
+    x_skip = keras.layers.Activation('relu')(x_skip)
+
+    x_skip_2 = keras.layers.Conv2D(nodes_per_layer*4, (3, 3), padding='same')(x)
+    x_skip_2 = keras.layers.Activation('relu')(x_skip_2)
+    
+
+    res_x = keras.layers.Conv2D(nodes_per_layer*4, (3,3), padding='same')(x)
+    res_x = keras.layers.Activation('relu')(res_x)
+    res_x = keras.layers.Conv2D(nodes_per_layer*4, (3,3), padding='same')(res_x)
+    res_x = keras.layers.Activation('relu')(res_x)
+    x = keras.layers.Add()([x, res_x])
+
+    res_x = keras.layers.Conv2D(nodes_per_layer*4, (3,3), padding='same')(x)
+    res_x = keras.layers.Activation('relu')(res_x)
+    res_x = keras.layers.Conv2D(nodes_per_layer*4, (3,3), padding='same')(res_x)
+    res_x = keras.layers.Activation('relu')(res_x)
+    x = keras.layers.Add()([x, res_x])
+    
+    res_x = keras.layers.Conv2D(nodes_per_layer*4, (3,3), padding='same')(x)
+    res_x = keras.layers.Activation('relu')(res_x)
+    res_x = keras.layers.Conv2D(nodes_per_layer*4, (3,3), padding='same')(res_x)
+    res_x = keras.layers.Activation('relu')(res_x)
+    x = keras.layers.Add()([x, res_x])
+
+    res_x = keras.layers.Conv2D(nodes_per_layer*4, (3,3), padding='same')(x)
+    res_x = keras.layers.Activation('relu')(res_x)
+    res_x = keras.layers.Conv2D(nodes_per_layer*4, (3,3), padding='same')(res_x)
+    res_x = keras.layers.Activation('relu')(res_x)
+    x = keras.layers.Add()([x, res_x])
+
+    res_x = keras.layers.Conv2D(nodes_per_layer*4, (3,3), padding='same')(x)
+    res_x = keras.layers.Activation('relu')(res_x)
+    res_x = keras.layers.Conv2D(nodes_per_layer*4, (3,3), padding='same')(res_x)
+    res_x = keras.layers.Activation('relu')(res_x)
+    x = keras.layers.Add()([x, res_x])
+
+    res_x = keras.layers.Conv2D(nodes_per_layer*4, (3,3), padding='same')(x)
+    res_x = keras.layers.Activation('relu')(res_x)
+    res_x = keras.layers.Conv2D(nodes_per_layer*4, (3,3), padding='same')(res_x)
+    res_x = keras.layers.Activation('relu')(res_x)
+    x = keras.layers.Add()([x, res_x])
+
+    x = keras.layers.Add()([x, x_skip_2])
+    
+    # x = keras.layers.BatchNormalization()(x)
+    x = keras.layers.Conv2DTranspose(nodes_per_layer*2, (2, 2), (2, 2))(x)
+    x = keras.layers.Activation('relu')(x)
+    x = keras.layers.Add()([x, x_skip])
+    x = keras.layers.Conv2DTranspose(nodes_per_layer, (2, 2), (2, 2))(x)
+    x = keras.layers.Activation('relu')(x)
+    # x = keras.layers.BatchNormalization()(x)
+    x = keras.layers.Conv2DTranspose(3, (2, 2), padding='same')(x)
+    output_x = keras.layers.Activation('relu')(x)
+    return keras.Model(input_x, output_x)
+
+def discriminator(nodes_per_layer=32):
+    input_x = keras.layers.Input(shape=(256, 256, 3))
+    x = keras.layers.Conv2D(nodes_per_layer, (3, 3), (2, 2))(input_x)
+    x = keras.layers.LeakyReLU(0.2)(x)
+    # x = keras.layers.BatchNormalization()(x)
+    x = keras.layers.Conv2D(nodes_per_layer, (3, 3), (2, 2))(x)
+    x = keras.layers.LeakyReLU(0.2)(x)
+    x = keras.layers.Conv2D(nodes_per_layer, (3, 3), (2, 2))(x)
+    x = keras.layers.LeakyReLU(0.2)(x)
+    # x = keras.layers.BatchNormalization()(x)
+    x = keras.layers.Conv2D(1, (10,10))(x)
+    x = keras.layers.LeakyReLU(0.2)(x)
+    x = keras.layers.Dropout(0.3)(x)
+    x = keras.layers.Flatten()(x)
+    x = keras.layers.Dense(1)(x)
+    output_x = keras.layers.Activation('sigmoid')(x)
+    # output_x = keras.layers.Lambda(lambda x: keras.backend.mean(x, keepdims=True))(x)
+    return keras.Model(input_x, output_x)
