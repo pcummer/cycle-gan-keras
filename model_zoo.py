@@ -81,3 +81,34 @@ def discriminator(nodes_per_layer=32):
     output_x = keras.layers.Activation('sigmoid')(x)
     # output_x = keras.layers.Lambda(lambda x: keras.backend.mean(x, keepdims=True))(x)
     return keras.Model(input_x, output_x)
+
+def create_gans(nodes_per_layer=32):
+    generator_a_to_b = generator(nodes_per_layer=nodes_per_layer)
+    generator_b_to_a = generator(nodes_per_layer=nodes_per_layer)
+    discriminator_a = discriminator(nodes_per_layer=nodes_per_layer)
+    discriminator_b = discriminator(nodes_per_layer=nodes_per_layer)
+
+    slow_optimizer = keras.optimizers.Adam(learning_rate=0.0001)
+    discriminator_a.compile(optimizer=slow_optimizer, loss='binary_crossentropy', metrics=['acc'])
+    slow_optimizer = keras.optimizers.Adam(learning_rate=0.0001)
+    discriminator_b.compile(optimizer=slow_optimizer, loss='binary_crossentropy', metrics=['acc'])
+
+    discriminator_a.trainable = False
+    discriminator_b.trainable = False
+
+    input_a = keras.layers.Input(shape=(256, 256, 3))
+    output_image_b = generator_a_to_b(input_a)
+    output_discriminator_b = discriminator_b(output_image_b)
+    output_reconstruction_a = generator_b_to_a(output_image_b)
+
+    input_b = keras.layers.Input(shape=(256, 256, 3))
+    output_image_a = generator_b_to_a(input_b)
+    output_discriminator_a = discriminator_a(output_image_a)
+    output_reconstruction_b = generator_a_to_b(output_image_a)
+
+    gan_a_to_b = keras.Model(inputs=input_a, outputs=[output_discriminator_b, output_reconstruction_a, output_image_b])
+    gan_b_to_a = keras.Model(inputs=input_b, outputs=[output_discriminator_a, output_reconstruction_b, output_image_a])
+
+    gan_a_to_b.compile(optimizer='adam', loss=['binary_crossentropy', 'mae', 'mae'], loss_weights = [0.3, 1, 0.1])
+    gan_b_to_a.compile(optimizer='adam', loss=['binary_crossentropy', 'mae', 'mae'], loss_weights = [0.3, 1, 0.1])
+    return gan_a_to_b, gan_b_to_a, generator_a_to_b, generator_b_to_a, discriminator_a, discriminator_b
