@@ -31,24 +31,29 @@ for i in range(0, number_training_batches):
   gan_a_to_b.fit(images_a_batch, [target_a_batch, images_a_batch, images_a_batch], batch_size=1)
   gan_b_to_a.fit(images_b_batch, [target_b_batch, images_b_batch, images_b_batch], batch_size=1)
 
+  # create a new set of false images to train discriminator
   images_b_batch_fake = generator_a_to_b.predict(images_a_batch, batch_size=1)
   images_a_batch_fake = generator_b_to_a.predict(images_b_batch, batch_size=1)
   target_a_batch_fake = np.zeros([len(images_a_batch_fake),1])
   target_b_batch_fake = np.zeros([len(images_b_batch_fake),1])
 
+  # combine fake and real images by class
   images_a_batch_discriminator = np.concatenate((images_a_batch, images_a_batch_fake), axis=0)
   images_b_batch_discriminator = np.concatenate((images_b_batch, images_b_batch_fake), axis=0)
   target_a_batch_discriminator = np.concatenate((target_a_batch, target_a_batch_fake), axis=0)
   target_b_batch_discriminator = np.concatenate((target_b_batch, target_b_batch_fake), axis=0)
 
+  # fit discriminator to determine real vs fake images in a class
   discriminator_a.fit(images_a_batch_discriminator, target_a_batch_discriminator, batch_size=1)
   discriminator_b.fit(images_b_batch_discriminator, target_b_batch_discriminator, batch_size=1)
 
+  # create a second training set for the discriminators of all real images mixing the classes
   images_a_batch_discriminator = np.concatenate((images_a_batch, images_b_batch), axis=0)
   images_b_batch_discriminator = np.concatenate((images_b_batch, images_a_batch), axis=0)
   target_a_batch_discriminator = np.concatenate((target_a_batch, target_a_batch_fake), axis=0)
   target_b_batch_discriminator = np.concatenate((target_b_batch, target_b_batch_fake), axis=0)
 
+  # train discriminators to determine real images of class a from real images of class b
   discriminator_a.fit(images_a_batch_discriminator, target_a_batch_discriminator, batch_size=1)
   discriminator_b.fit(images_b_batch_discriminator, target_b_batch_discriminator, batch_size=1)
 
