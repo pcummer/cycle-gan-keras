@@ -1,6 +1,5 @@
 from tensorflow import keras
 
-
 def generator(nodes_per_layer=32):
     input_x = keras.layers.Input(shape=(256, 256, 3))
 
@@ -46,8 +45,44 @@ def generator(nodes_per_layer=32):
     res_x = keras.layers.Activation('relu')(res_x)
     x_half = keras.layers.Add()([x_half, res_x])
 
+    res_x = keras.layers.Conv2D(nodes_per_layer * 2, (3, 3), padding='same')(x_half)
+    res_x = keras.layers.Activation('relu')(res_x)
+    res_x = keras.layers.Conv2D(nodes_per_layer * 2, (3, 3), padding='same')(res_x)
+    res_x = keras.layers.Activation('relu')(res_x)
+    x_half = keras.layers.Add()([x_half, res_x])
+
+    res_x = keras.layers.Conv2D(nodes_per_layer * 2, (3, 3), padding='same')(x_half)
+    res_x = keras.layers.Activation('relu')(res_x)
+    res_x = keras.layers.Conv2D(nodes_per_layer * 2, (3, 3), padding='same')(res_x)
+    res_x = keras.layers.Activation('relu')(res_x)
+    x_half = keras.layers.Add()([x_half, res_x])
+
+    res_x = keras.layers.Conv2D(nodes_per_layer * 2, (3, 3), padding='same')(x_half)
+    res_x = keras.layers.Activation('relu')(res_x)
+    res_x = keras.layers.Conv2D(nodes_per_layer * 2, (3, 3), padding='same')(res_x)
+    res_x = keras.layers.Activation('relu')(res_x)
+    x_half = keras.layers.Add()([x_half, res_x])
+
     x_quarter = keras.layers.Conv2D(nodes_per_layer * 4, (2, 2), (2, 2))(x_half)
     x_quarter = keras.layers.Activation('relu')(x_quarter)
+
+    res_x = keras.layers.Conv2D(nodes_per_layer * 4, (3, 3), padding='same')(x_quarter)
+    res_x = keras.layers.Activation('relu')(res_x)
+    res_x = keras.layers.Conv2D(nodes_per_layer * 4, (3, 3), padding='same')(res_x)
+    res_x = keras.layers.Activation('relu')(res_x)
+    x_quarter = keras.layers.Add()([x_quarter, res_x])
+
+    res_x = keras.layers.Conv2D(nodes_per_layer * 4, (3, 3), padding='same')(x_quarter)
+    res_x = keras.layers.Activation('relu')(res_x)
+    res_x = keras.layers.Conv2D(nodes_per_layer * 4, (3, 3), padding='same')(res_x)
+    res_x = keras.layers.Activation('relu')(res_x)
+    x_quarter = keras.layers.Add()([x_quarter, res_x])
+
+    res_x = keras.layers.Conv2D(nodes_per_layer * 4, (3, 3), padding='same')(x_quarter)
+    res_x = keras.layers.Activation('relu')(res_x)
+    res_x = keras.layers.Conv2D(nodes_per_layer * 4, (3, 3), padding='same')(res_x)
+    res_x = keras.layers.Activation('relu')(res_x)
+    x_quarter = keras.layers.Add()([x_quarter, res_x])
 
     res_x = keras.layers.Conv2D(nodes_per_layer * 4, (3, 3), padding='same')(x_quarter)
     res_x = keras.layers.Activation('relu')(res_x)
@@ -82,23 +117,18 @@ def generator(nodes_per_layer=32):
 
 def discriminator(nodes_per_layer=32):
     input_x = keras.layers.Input(shape=(256, 256, 3))
-    x = keras.layers.Conv2D(nodes_per_layer, (5, 5), (2, 2))(input_x)
+    x = keras.layers.Conv2D(nodes_per_layer, (3, 3), (2, 2))(input_x)
     x = keras.layers.LeakyReLU(0.2)(x)
-    # x = keras.layers.BatchNormalization()(x)
-    x = keras.layers.Conv2D(nodes_per_layer, (5, 5), (2, 2))(x)
+    x = keras.layers.Conv2D(nodes_per_layer, (3, 3), (2, 2))(x)
     x = keras.layers.LeakyReLU(0.2)(x)
-    x = keras.layers.Conv2D(nodes_per_layer, (5, 5), (2, 2))(x)
+    x = keras.layers.Conv2D(nodes_per_layer, (3, 3), (2, 2))(x)
     x = keras.layers.LeakyReLU(0.2)(x)
-    x = keras.layers.Conv2D(nodes_per_layer, (5, 5), (2, 2))(x)
-    x = keras.layers.LeakyReLU(0.2)(x)
-    # x = keras.layers.BatchNormalization()(x)
-    x = keras.layers.Conv2D(1, (10, 10))(x)
+    x = keras.layers.Conv2D(nodes_per_layer, (3, 3), (2, 2))(x)
     x = keras.layers.LeakyReLU(0.2)(x)
     x = keras.layers.Dropout(0.5)(x)
     x = keras.layers.Flatten()(x)
     x = keras.layers.Dense(1)(x)
     output_x = keras.layers.Activation('sigmoid')(x)
-    # output_x = keras.layers.Lambda(lambda x: keras.backend.mean(x, keepdims=True))(x)
     return keras.Model(input_x, output_x)
 
 def create_gans(nodes_per_layer=32):
@@ -128,6 +158,10 @@ def create_gans(nodes_per_layer=32):
     gan_a_to_b = keras.Model(inputs=input_a, outputs=[output_discriminator_b, output_reconstruction_a, output_image_b])
     gan_b_to_a = keras.Model(inputs=input_b, outputs=[output_discriminator_a, output_reconstruction_b, output_image_a])
 
-    gan_a_to_b.compile(optimizer='adam', loss=['binary_crossentropy', 'mae', 'mae'], loss_weights = [0.1, 1, 0.01])
-    gan_b_to_a.compile(optimizer='adam', loss=['binary_crossentropy', 'mae', 'mae'], loss_weights = [0.1, 1, 0.01])
+    slow_optimizer = keras.optimizers.Adam(learning_rate=0.001)
+    gan_a_to_b.compile(optimizer=slow_optimizer, loss=['binary_crossentropy', 'mae', 'mae'],
+                       loss_weights=[0.1, 1, 0.01])
+    slow_optimizer = keras.optimizers.Adam(learning_rate=0.001)
+    gan_b_to_a.compile(optimizer=slow_optimizer, loss=['binary_crossentropy', 'mae', 'mae'],
+                       loss_weights=[0.1, 1, 0.01])
     return gan_a_to_b, gan_b_to_a, generator_a_to_b, generator_b_to_a, discriminator_a, discriminator_b
