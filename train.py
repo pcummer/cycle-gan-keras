@@ -6,21 +6,28 @@ from tensorflow import keras
 number_training_batches = 50
 training_batch_size = 128
 
+# create the models
 gan_a_to_b, gan_b_to_a, generator_a_to_b, generator_b_to_a, discriminator_a, discriminator_b = model_zoo.create_gans(nodes_per_layer=32)
 
+# simple data augmentation implicitly including resizing to 256,256
 feature_datagen_a = keras.preprocessing.image.ImageDataGenerator(horizontal_flip=True)
 feature_datagen_b = keras.preprocessing.image.ImageDataGenerator(horizontal_flip=True)
 
+# pipeline to flow images from a directory in batches
 feature_image_generator_a = feature_datagen_a.flow_from_directory('images_a', seed=1, class_mode=None, batch_size = training_batch_size)
 feature_image_generator_b = feature_datagen_b.flow_from_directory('images_b', seed=1, class_mode=None, batch_size = training_batch_size)
 
+# core training loop, loads batch of images, generators and discriminators on batch
 for i in range(0, number_training_batches):
-  print(i)
+  print('training batch: ' + str(i))
+
+  # load a batch of images of each class into memory
   images_a_batch = next(feature_image_generator_a)
   images_b_batch = next(feature_image_generator_b)
   target_a_batch = np.ones([len(images_a_batch),1])
   target_b_batch = np.ones([len(images_b_batch),1])
 
+  # fit each generator
   gan_a_to_b.fit(images_a_batch, [target_a_batch, images_a_batch, images_a_batch], batch_size=1)
   gan_b_to_a.fit(images_b_batch, [target_b_batch, images_b_batch, images_b_batch], batch_size=1)
 

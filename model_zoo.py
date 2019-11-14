@@ -151,7 +151,7 @@ def discriminator(nodes_per_layer=32):
     output_x = keras.layers.Activation('sigmoid')(x)
     return keras.Model(input_x, output_x)
 
-def create_gans(nodes_per_layer=32):
+def create_gans(nodes_per_layer=16):
     '''Shares generators and discriminators to create two paired GANs with appropriate weight sharing
     :param nodes_per_layer:
     :return: model, model, model, model, model, model
