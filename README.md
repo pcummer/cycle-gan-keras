@@ -17,12 +17,14 @@ A few tips:
 Examples:
 Claude Monet <-> William Turner
 
+We see that the model has learned to correctly add/remove texture, though it also learned a general pallete swap that is undesirable.
+
 Turner (translated) <- Monet (original)
 
 ![Monet to Turner 1](output/Claude_Monet_24.jpg_translated_[[0.53027546]].png)
 ![Monet to Turner 2](output/Claude_Monet_71.jpg_translated_[[0.42348522]].png)
 
-Money (translated) <- Turner (original)
+Monet (translated) <- Turner (original)
 
 ![Turner to Monet 1](output/William_Turner_53.jpg_translated_[[1.]].png)
 ![Turner to Monet 2](output/William_Turner_6.jpg_translated_[[0.6505608]].png)
