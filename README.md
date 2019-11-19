@@ -14,4 +14,7 @@ A few tips:
 * Loss is not a great indicator of performance in adverserial setups; visualize the outputs periodically
 * Keep the batch size for training very low or it will likely fail to learn
 
+Examples:
 Claude Monet <-> William Turner:
+
+![Monet to Turner](output/Claude_Monet_24.jpg_translated_[[0.53027546]].png)
