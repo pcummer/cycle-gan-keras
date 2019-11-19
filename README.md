@@ -13,3 +13,5 @@ A few tips:
 * Narrower networks train more smoothly and are less prone to mode collapse; start at 8 nodes per layer
 * Loss is not a great indicator of performance in adverserial setups; visualize the outputs periodically
 * Keep the batch size for training very low or it will likely fail to learn
+
+Claude Monet <-> William Turner:
